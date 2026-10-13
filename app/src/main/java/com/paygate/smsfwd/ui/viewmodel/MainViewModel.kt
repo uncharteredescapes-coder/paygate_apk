@@ -51,6 +51,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val languageFlow: StateFlow<String> = prefs.languageFlow
     val walletsFlow: StateFlow<List<WalletSlotInfo>> = prefs.walletsFlow
     val isKioskFlow: StateFlow<Boolean> = prefs.isKioskFlow
+    val hasIgnoredWarningFlow: StateFlow<Boolean> = prefs.hasIgnoredWarningFlow
 
     val pendingCount: StateFlow<Int> = dao.observePendingCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
@@ -219,8 +220,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun quickPairLocalDev() {
-        pairDevice("DEMO99", "https://api.paygate.com")
+    fun dismissIgnoredWarning() {
+        prefs.hasIgnoredWarning = false
     }
 
     fun unpairDevice() {

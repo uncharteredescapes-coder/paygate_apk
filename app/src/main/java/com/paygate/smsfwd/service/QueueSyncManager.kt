@@ -85,14 +85,18 @@ object QueueSyncManager {
                     if (response.isSuccessful) {
                         val body = response.body()
                         val latency = now - sms.receivedAt
+                        val ignoredNote = if (body?.ignored == true) "Server ignored: ${body.reason ?: "unknown"}" else null
                         val updated = sms.copy(
                             status = QueuedSms.STATUS_DELIVERED,
                             deliveredAt = now,
                             serverAckTrxId = body?.trxId ?: sms.trxId,
                             deliveryLatencyMs = latency,
-                            errorMessage = null
+                            errorMessage = ignoredNote
                         )
                         dao.update(updated)
+                        if (ignoredNote != null) {
+                            prefs.hasIgnoredWarning = true
+                        }
                         deliveredCount++
 
                         // Track reference telemetry
@@ -113,6 +117,13 @@ object QueueSyncManager {
                             )
                             dao.update(updated)
                             break
+                        } else if (code == 400 || code == 413 || code == 422) {
+                            dao.update(sms.copy(
+                                attemptCount = sms.attemptCount + 1,
+                                lastAttemptAt = now,
+                                status = QueuedSms.STATUS_FAILED,
+                                errorMessage = "HTTP $code (not retryable)"
+                            ))
                         } else {
                             val attempts = sms.attemptCount + 1
                             val nextStatus = if (attempts >= 20) QueuedSms.STATUS_FAILED else sms.status

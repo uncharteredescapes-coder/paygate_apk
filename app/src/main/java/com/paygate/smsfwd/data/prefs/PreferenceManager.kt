@@ -35,6 +35,9 @@ class PreferenceManager(context: Context) {
     private val _isKioskFlow = MutableStateFlow(isKioskMode)
     val isKioskFlow: StateFlow<Boolean> = _isKioskFlow.asStateFlow()
 
+    private val _hasIgnoredWarningFlow = MutableStateFlow(hasIgnoredWarning)
+    val hasIgnoredWarningFlow: StateFlow<Boolean> = _hasIgnoredWarningFlow.asStateFlow()
+
     init {
         ApiClient.deviceIdProvider = { deviceId }
         ApiClient.mockServerEnabled = mockServerMode
@@ -55,7 +58,7 @@ class PreferenceManager(context: Context) {
         }
 
     var deviceId: String
-        get() = prefs.getString(KEY_DEVICE_ID, "dev_98213") ?: "dev_98213"
+        get() = prefs.getString(KEY_DEVICE_ID, "") ?: ""
         set(value) {
             prefs.edit().putString(KEY_DEVICE_ID, value).apply()
             ApiClient.deviceIdProvider = { value }
@@ -129,10 +132,17 @@ class PreferenceManager(context: Context) {
         }
 
     var mockServerMode: Boolean
-        get() = prefs.getBoolean(KEY_MOCK_SERVER_MODE, true) // Simulated mock server default
+        get() = prefs.getBoolean(KEY_MOCK_SERVER_MODE, false)
         set(value) {
             prefs.edit().putBoolean(KEY_MOCK_SERVER_MODE, value).apply()
             ApiClient.mockServerEnabled = value
+        }
+
+    var hasIgnoredWarning: Boolean
+        get() = prefs.getBoolean(KEY_HAS_IGNORED_WARNING, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_HAS_IGNORED_WARNING, value).apply()
+            _hasIgnoredWarningFlow.value = value
         }
 
     var refSeenCount: Int
@@ -180,13 +190,15 @@ class PreferenceManager(context: Context) {
             .remove(KEY_DEVICE_ID)
             .remove(KEY_WALLETS)
             .putBoolean(KEY_AUTH_REVOKED, false)
+            .remove(KEY_HAS_IGNORED_WARNING)
             .apply()
         _isPairedFlow.value = false
         _walletsFlow.value = emptyList()
+        _hasIgnoredWarningFlow.value = false
     }
 
     companion object {
-        const val DEFAULT_BASE_URL = "https://api.paygate.com"
+        const val DEFAULT_BASE_URL = "https://paygator.vercel.app/api"
         val DEFAULT_ALLOWED_SENDERS = setOf("bKash", "NAGAD", "16216")
 
         private const val KEY_IS_PAIRED = "is_paired"
@@ -209,5 +221,6 @@ class PreferenceManager(context: Context) {
         private const val KEY_REF_SEEN_COUNT = "ref_seen_count"
         private const val KEY_NO_REF_COUNT = "no_ref_count"
         private const val KEY_MAINTENANCE_MODE = "maintenance_mode"
+        private const val KEY_HAS_IGNORED_WARNING = "has_ignored_warning"
     }
 }

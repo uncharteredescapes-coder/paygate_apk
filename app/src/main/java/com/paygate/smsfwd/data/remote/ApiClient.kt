@@ -1,5 +1,6 @@
 package com.paygate.smsfwd.data.remote
 
+import com.paygate.smsfwd.BuildConfig
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Interceptor
@@ -15,7 +16,7 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
 
     var deviceIdProvider: () -> String = { "dev_default" }
-    var mockServerEnabled: Boolean = true // Per user choice: simulated mock server default
+    var mockServerEnabled: Boolean = false
 
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
@@ -35,7 +36,7 @@ object ApiClient {
         val request = chain.request()
         val url = request.url.encodedPath
 
-        if (mockServerEnabled || request.url.host.contains("mock")) {
+        if (mockServerEnabled) {
             val responseBody = when {
                 url.contains("webhook") -> {
                     """{"stored": true, "trx_id": "ACK_${System.currentTimeMillis() % 100000}"}"""
@@ -81,7 +82,11 @@ object ApiClient {
         .readTimeout(10, TimeUnit.SECONDS)
         .writeTimeout(10, TimeUnit.SECONDS)
         .addInterceptor(headerInterceptor)
-        .addInterceptor(mockInterceptor)
+        .apply {
+            if (BuildConfig.DEBUG) {
+                addInterceptor(mockInterceptor)
+            }
+        }
         .retryOnConnectionFailure(true)
         .build()
 

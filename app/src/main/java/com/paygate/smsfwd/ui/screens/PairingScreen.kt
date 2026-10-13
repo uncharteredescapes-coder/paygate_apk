@@ -75,7 +75,7 @@ fun PairingScreen(
     val wallets by viewModel.walletsFlow.collectAsStateWithLifecycle()
 
     var pairingCodeInput by remember { mutableStateOf("") }
-    var baseUrlInput by remember { mutableStateOf("https://api.paygate.com") }
+    var baseUrlInput by remember { mutableStateOf("https://paygator.vercel.app/api") }
 
     Column(
         modifier = modifier
@@ -235,19 +235,6 @@ fun PairingScreen(
                     modifier = Modifier.fillMaxWidth(),
                     testTag = "btn_connect_device"
                 )
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                // Instant Fleet Quick-Connect (for testing & emulator)
-                OutlinedButton(
-                    onClick = { viewModel.quickPairLocalDev() },
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth().testTag("btn_quick_dev_pair")
-                ) {
-                    Icon(Icons.Default.FlashOn, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Simulated Fleet Quick-Connect (instant 200 OK)")
-                }
             }
         }
     }

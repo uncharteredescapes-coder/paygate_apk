@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudQueue
 import androidx.compose.material.icons.filled.Error
@@ -114,6 +115,7 @@ fun HomeScreen(
     val health by viewModel.healthStatus.collectAsStateWithLifecycle()
     val wallets by viewModel.walletsFlow.collectAsStateWithLifecycle()
     val isKiosk by viewModel.isKioskFlow.collectAsStateWithLifecycle()
+    val hasIgnoredWarning by viewModel.hasIgnoredWarningFlow.collectAsStateWithLifecycle()
     val actionFeedback by viewModel.actionFeedback.collectAsStateWithLifecycle()
 
     var showSimulatorSheet by remember { mutableStateOf(false) }
@@ -132,6 +134,35 @@ fun HomeScreen(
                 isPaired = isPaired,
                 onConfigureClick = onNavigateToPairing
             )
+        }
+
+        // Attention Banner: Server Ignored Delivery (missing wallet binding / unparsed)
+        if (hasIgnoredWarning) {
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = GateDangerLight.copy(alpha = 0.12f)),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth().border(1.dp, GateDangerLight, RoundedCornerShape(14.dp))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Warning, contentDescription = null, tint = GateDangerLight)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Delivery Ignored by Server", fontWeight = FontWeight.Bold, color = GateDangerLight)
+                            Text("The server ignored a recent SMS payload (e.g. unmapped wallet or missing binding). Verify wallet setup.", fontSize = 12.sp)
+                        }
+                        IconButton(
+                            onClick = { viewModel.dismissIgnoredWarning() },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = GateDangerLight)
+                        }
+                    }
+                }
+            }
         }
 
         // 2. Kiosk or Attention Banner (if paused, stuck queue, or unmapped)

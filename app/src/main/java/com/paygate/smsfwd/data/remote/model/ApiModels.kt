@@ -47,6 +47,9 @@ data class WebhookResponse(
     @Json(name = "ignored")
     val ignored: Boolean? = null,
 
+    @Json(name = "reason")
+    val reason: String? = null,
+
     @Json(name = "duplicate")
     val duplicate: Boolean? = null,
 
