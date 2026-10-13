@@ -146,11 +146,11 @@ fun PayGateApp(viewModel: MainViewModel) {
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
-                            painter = painterResource(id = R.drawable.paygate_logo_1791826977584),
-                            contentDescription = "PayGate Logo",
+                            painter = painterResource(id = R.drawable.ic_gate_logo),
+                            contentDescription = "Gate Logo",
                             modifier = Modifier
                                 .size(34.dp)
-                                .clip(CircleShape)
+                                .clip(RoundedCornerShape(8.dp))
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {

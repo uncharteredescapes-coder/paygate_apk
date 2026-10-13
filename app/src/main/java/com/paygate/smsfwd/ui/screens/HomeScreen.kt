@@ -76,6 +76,7 @@ import com.paygate.smsfwd.R
 import com.paygate.smsfwd.data.local.entity.QueuedSms
 import com.paygate.smsfwd.ui.components.ChipStatus
 import com.paygate.smsfwd.ui.components.GateButton
+import com.paygate.smsfwd.ui.components.GateCard
 import com.paygate.smsfwd.ui.components.HealthRow
 import com.paygate.smsfwd.ui.components.MaskedValue
 import com.paygate.smsfwd.ui.components.ReferenceChip
@@ -302,56 +303,60 @@ fun HomeScreen(
 
         // 6. Action Controls: Sync Now, Heartbeat, Test Simulator
         item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                shape = RoundedCornerShape(16.dp),
+            GateCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column {
                     Text(
                         text = "Fleet Operations & Diagnostics",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = GateTheme.colors.text
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Instant queue drain, manual heartbeat ping, and simulated test receipts.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = GateTheme.colors.textMuted
                     )
                     Spacer(modifier = Modifier.height(14.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         GateButton(
                             text = "Sync Now",
                             onClick = { viewModel.triggerSyncNow() },
                             leadingIcon = Icons.Default.Refresh,
                             modifier = Modifier.weight(1f),
-                            testTag = "btn_sync_now"
+                            testTag = "btn_sync_now",
+                            isPrimary = true,
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp)
                         )
 
-                        OutlinedButton(
+                        GateButton(
+                            text = "Heartbeat",
                             onClick = { viewModel.triggerHeartbeatNow() },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.testTag("btn_heartbeat")
-                        ) {
-                            Icon(Icons.Default.Sensors, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Heartbeat")
-                        }
+                            leadingIcon = Icons.Default.Sensors,
+                            modifier = Modifier.weight(1f),
+                            testTag = "btn_heartbeat",
+                            isOutlined = true,
+                            isPrimary = false,
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp)
+                        )
 
-                        Button(
+                        GateButton(
+                            text = "Simulator",
                             onClick = { showSimulatorSheet = true },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.testTag("btn_test_simulator")
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Simulator")
-                        }
+                            leadingIcon = Icons.Default.PlayArrow,
+                            modifier = Modifier.weight(1f),
+                            testTag = "btn_test_simulator",
+                            isOutlined = true,
+                            isPrimary = false,
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp)
+                        )
                     }
                 }
             }
@@ -545,7 +550,7 @@ fun LastPaymentHeroCard(
                                 style = MaterialTheme.typography.titleMedium,
                                 fontFamily = com.paygate.smsfwd.ui.theme.GateMonoFontFamily,
                                 fontWeight = FontWeight.Bold,
-                                color = GateTheme.colors.ink
+                                color = GateTheme.colors.accentText
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             ReferenceChip(reference = lastDelivered.refHint)

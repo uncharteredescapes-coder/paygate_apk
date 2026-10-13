@@ -113,4 +113,6 @@ object ApiClient {
             return service
         }
     }
+
+    fun getApiService(baseUrl: String): PayGateApiService = getService(baseUrl)
 }

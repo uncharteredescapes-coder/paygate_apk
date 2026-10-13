@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.paygate.smsfwd.data.local.entity.QueuedSms
 import com.paygate.smsfwd.ui.components.ChipStatus
+import com.paygate.smsfwd.ui.components.GateButton
 import com.paygate.smsfwd.ui.components.PinLockDialog
 import com.paygate.smsfwd.ui.components.ReferenceChip
 import com.paygate.smsfwd.ui.components.StatusChip
@@ -294,7 +295,7 @@ fun ActivityLogItemV3(
                         style = MaterialTheme.typography.titleMedium,
                         fontFamily = com.paygate.smsfwd.ui.theme.GateMonoFontFamily,
                         fontWeight = FontWeight.Bold,
-                        color = GateTheme.colors.ink
+                        color = GateTheme.colors.accentText
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     ReferenceChip(reference = sms.refHint)
@@ -371,7 +372,12 @@ fun LogDetailBottomSheetV3(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Amount", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(sms.amount ?: "N/A", fontWeight = FontWeight.Bold)
+                Text(
+                    sms.amount ?: "N/A",
+                    fontWeight = FontWeight.Bold,
+                    color = GateTheme.colors.accentText,
+                    fontFamily = com.paygate.smsfwd.ui.theme.GateMonoFontFamily
+                )
             }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -419,15 +425,13 @@ fun LogDetailBottomSheetV3(
 
             if (sms.status != QueuedSms.STATUS_DELIVERED) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Button(
+                GateButton(
+                    text = "Retry Delivery Now",
                     onClick = onRetry,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Retry Delivery Now")
-                }
+                    leadingIcon = Icons.Default.Refresh,
+                    modifier = Modifier.fillMaxWidth(),
+                    testTag = "btn_retry_delivery"
+                )
             }
         }
     }

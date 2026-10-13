@@ -53,25 +53,21 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.paygate.smsfwd.ui.theme.GateBorderLight
-import com.paygate.smsfwd.ui.theme.GateDangerLight
 import com.paygate.smsfwd.ui.theme.GateMonoFontFamily
-import com.paygate.smsfwd.ui.theme.GateSuccessLight
 import com.paygate.smsfwd.ui.theme.GateTheme
-import com.paygate.smsfwd.ui.theme.GateWarningLight
 
 /**
- * Gate UI Design System Component Suite (DESIGN.md / tokens.json)
+ * Gate UI Design System Component Suite (DESIGN.md / App Icon specification)
  *
  * Rules:
- * - 4-Point Grid & Radii hierarchy:
- *   Inputs: 8.dp (rounded-lg)
- *   Buttons: 12.dp (rounded-xl), default height 48.dp
- *   Cards: 16.dp (rounded-2xl)
- *   Hairlines: 1.dp border
- * - Provider Brand Accents:
- *   Restricted strictly to brand dots / indicator chips (never overwhelming button fills)
- * - Zero-Fluff: Calm, precise, tabular numbers on financial data.
+ * - Palette derived directly from icon:
+ *   Near-black #0A0A0A canvas
+ *   White #F8FAFC arch text
+ *   Emerald #10B981 coin accent: primary action, money, and success
+ * - Text on emerald is ALWAYS #0A0A0A, never white (7.8:1 contrast).
+ * - Single primary action per screen.
+ * - Tabular numbers on financial data (Money is the hero).
+ * - Hairline borders (1.dp) over drop shadows.
  */
 
 // ---------------------------------------------------------------------------
@@ -87,7 +83,7 @@ fun ProviderBrandDot(
         "bkash" -> GateTheme.colors.bkash
         "nagad" -> GateTheme.colors.nagad
         "rocket" -> GateTheme.colors.rocket
-        else -> GateTheme.colors.ink3
+        else -> GateTheme.colors.textSubtle
     }
     Box(
         modifier = modifier
@@ -97,7 +93,7 @@ fun ProviderBrandDot(
 }
 
 // ---------------------------------------------------------------------------
-// 2. Gate UI Primary, Outlined & Danger Button (12.dp radius, 48.dp touch target)
+// 2. Gate UI Primary, Outlined & Danger Button (10.dp radius, 48.dp touch target)
 // ---------------------------------------------------------------------------
 @Composable
 fun GateButton(
@@ -107,11 +103,13 @@ fun GateButton(
     enabled: Boolean = true,
     isDanger: Boolean = false,
     isOutlined: Boolean = false,
+    isPrimary: Boolean = true,
     leadingIcon: ImageVector? = null,
-    testTag: String = ""
+    testTag: String = "",
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
 ) {
     val colors = GateTheme.colors
-    val shape = RoundedCornerShape(12.dp)
+    val shape = RoundedCornerShape(10.dp)
 
     if (isOutlined) {
         OutlinedButton(
@@ -120,23 +118,38 @@ fun GateButton(
             shape = shape,
             border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = colors.ink,
-                disabledContentColor = colors.ink3
+                contentColor = colors.text,
+                disabledContentColor = colors.textSubtle
             ),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            contentPadding = contentPadding,
             modifier = modifier
                 .height(48.dp)
                 .testTag(testTag)
         ) {
             if (leadingIcon != null) {
-                Icon(leadingIcon, contentDescription = null, modifier = Modifier.size(18.dp), tint = colors.ink2)
-                Spacer(modifier = Modifier.width(8.dp))
+                Icon(leadingIcon, contentDescription = null, modifier = Modifier.size(16.dp), tint = colors.textMuted)
+                Spacer(modifier = Modifier.width(6.dp))
             }
-            Text(text, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
         }
     } else {
-        val containerColor = if (isDanger) colors.danger else colors.ink
-        val contentColor = if (isDanger) Color.White else colors.surface
+        // Emerald #10B981 is used for primary actions with #0A0A0A text.
+        val containerColor = when {
+            isDanger -> colors.danger
+            isPrimary -> colors.accent // Emerald #10B981
+            else -> colors.surface2
+        }
+        val contentColor = when {
+            isDanger -> Color.White
+            isPrimary -> colors.onAccent // #0A0A0A (Near-black)
+            else -> colors.text
+        }
 
         Button(
             onClick = onClick,
@@ -146,24 +159,30 @@ fun GateButton(
                 containerColor = containerColor,
                 contentColor = contentColor,
                 disabledContainerColor = colors.surface2,
-                disabledContentColor = colors.ink3
+                disabledContentColor = colors.textSubtle
             ),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            contentPadding = contentPadding,
             modifier = modifier
                 .height(48.dp)
                 .testTag(testTag)
         ) {
             if (leadingIcon != null) {
-                Icon(leadingIcon, contentDescription = null, modifier = Modifier.size(18.dp), tint = contentColor)
-                Spacer(modifier = Modifier.width(8.dp))
+                Icon(leadingIcon, contentDescription = null, modifier = Modifier.size(16.dp), tint = contentColor)
+                Spacer(modifier = Modifier.width(6.dp))
             }
-            Text(text, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
         }
     }
 }
 
 // ---------------------------------------------------------------------------
-// 3. Status Chip (Full rounded pill, subtle pastel tint)
+// 3. Status Chip (Full rounded pill, subtle tint)
 // ---------------------------------------------------------------------------
 enum class ChipStatus {
     SUCCESS, WARNING, DANGER, NEUTRAL
@@ -177,10 +196,10 @@ fun StatusChip(
 ) {
     val colors = GateTheme.colors
     val (bgColor, textColor) = when (status) {
-        ChipStatus.SUCCESS -> colors.success.copy(alpha = 0.12f) to colors.success
+        ChipStatus.SUCCESS -> colors.accentSubtle to colors.accentText
         ChipStatus.WARNING -> colors.warning.copy(alpha = 0.14f) to colors.warning
         ChipStatus.DANGER -> colors.danger.copy(alpha = 0.12f) to colors.danger
-        ChipStatus.NEUTRAL -> colors.surface2 to colors.ink2
+        ChipStatus.NEUTRAL -> colors.surface2 to colors.textMuted
     }
 
     Box(
@@ -202,7 +221,7 @@ fun StatusChip(
 }
 
 // ---------------------------------------------------------------------------
-// 4. Hairline Card Container (16.dp radius, 1.dp hairline border, zero drop shadow)
+// 4. Hairline Card Container (14.dp radius, 1.dp hairline border, zero drop shadow)
 // ---------------------------------------------------------------------------
 @Composable
 fun GateCard(
@@ -213,9 +232,9 @@ fun GateCard(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(backgroundColor)
-            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+            .border(1.dp, borderColor, RoundedCornerShape(14.dp))
             .padding(16.dp)
     ) {
         content()
@@ -237,16 +256,16 @@ fun StatCard(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(colors.surface)
-            .border(1.dp, colors.border, RoundedCornerShape(16.dp))
+            .border(1.dp, colors.border, RoundedCornerShape(14.dp))
             .padding(14.dp)
     ) {
         Column {
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodySmall,
-                color = colors.ink2
+                color = colors.textMuted
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
@@ -254,14 +273,14 @@ fun StatCard(
                 style = MaterialTheme.typography.headlineMedium,
                 fontFamily = GateMonoFontFamily,
                 fontWeight = FontWeight.Bold,
-                color = statusColor ?: colors.ink
+                color = statusColor ?: colors.text
             )
             if (subtitle != null) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = colors.ink3
+                    color = colors.textSubtle
                 )
             }
         }
@@ -297,7 +316,7 @@ fun HealthRow(
                 modifier = Modifier
                     .size(36.dp)
                     .background(
-                        if (isHealthy) colors.success.copy(alpha = 0.12f) else colors.warning.copy(alpha = 0.14f),
+                        if (isHealthy) colors.accentSubtle else colors.warning.copy(alpha = 0.14f),
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -305,7 +324,7 @@ fun HealthRow(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (isHealthy) colors.success else colors.warning,
+                    tint = if (isHealthy) colors.accentText else colors.warning,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -315,12 +334,12 @@ fun HealthRow(
                     text = label,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = colors.ink
+                    color = colors.text
                 )
                 Text(
                     text = statusHint,
                     style = MaterialTheme.typography.labelSmall,
-                    color = colors.ink2
+                    color = colors.textMuted
                 )
             }
         }
@@ -329,12 +348,12 @@ fun HealthRow(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(9999.dp))
-                    .background(colors.success.copy(alpha = 0.12f))
+                    .background(colors.accentSubtle)
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text(
                     text = "✓ OK",
-                    color = colors.success,
+                    color = colors.accentText,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -344,7 +363,7 @@ fun HealthRow(
                 onClick = onFixClick,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colors.accent,
-                    contentColor = Color.White
+                    contentColor = colors.onAccent // #0A0A0A on emerald
                 ),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
@@ -357,7 +376,7 @@ fun HealthRow(
 }
 
 // ---------------------------------------------------------------------------
-// 7. Reference Chip (Gate UI --accent-soft pill with JetBrains Mono)
+// 7. Reference Chip (Gate UI emerald accent-subtle pill with JetBrains Mono)
 // ---------------------------------------------------------------------------
 @Composable
 fun ReferenceChip(
@@ -370,20 +389,20 @@ fun ReferenceChip(
         Text(
             text = "No Ref",
             style = MaterialTheme.typography.labelSmall,
-            color = colors.ink3,
+            color = colors.textSubtle,
             modifier = modifier
         )
     } else {
         Box(
             modifier = modifier
                 .clip(RoundedCornerShape(6.dp))
-                .background(colors.accentSoft)
-                .border(1.dp, colors.accent.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                .background(colors.accentSubtle)
+                .border(1.dp, colors.accent.copy(alpha = 0.25f), RoundedCornerShape(6.dp))
                 .padding(horizontal = 8.dp, vertical = 3.dp)
         ) {
             Text(
                 text = "Ref: $reference",
-                color = colors.accent,
+                color = colors.accentText,
                 fontFamily = GateMonoFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 11.sp,
@@ -415,7 +434,7 @@ fun MaskedValue(
         fontFamily = GateMonoFontFamily,
         fontWeight = FontWeight.Bold,
         style = MaterialTheme.typography.bodyMedium,
-        color = GateTheme.colors.ink,
+        color = GateTheme.colors.text,
         modifier = modifier
     )
 }
@@ -436,10 +455,10 @@ fun PinLockDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title, fontWeight = FontWeight.Bold, color = colors.ink) },
+        title = { Text(title, fontWeight = FontWeight.Bold, color = colors.text) },
         text = {
             Column {
-                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = colors.ink2)
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = colors.textMuted)
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = pinInput,
@@ -451,7 +470,8 @@ fun PinLockDialog(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = colors.accent,
                         unfocusedBorderColor = colors.border,
-                        focusedLabelColor = colors.accent
+                        focusedLabelColor = colors.accentText,
+                        cursorColor = colors.accent
                     ),
                     modifier = Modifier.fillMaxWidth().testTag("input_security_pin")
                 )
@@ -472,20 +492,20 @@ fun PinLockDialog(
                 },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.ink,
-                    contentColor = colors.surface
+                    containerColor = colors.accent,
+                    contentColor = colors.onAccent // #0A0A0A on emerald
                 ),
                 modifier = Modifier.testTag("btn_pin_confirm")
             ) {
-                Text("Confirm")
+                Text("Confirm", fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = colors.ink2)
+                Text("Cancel", color = colors.textMuted)
             }
         },
         containerColor = colors.surface,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(14.dp)
     )
 }

@@ -1,8 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:width="66dp"
-        android:height="66dp"
-        android:drawable="@drawable/paygate_logo_1791826977584"
-        android:gravity="center" />
-</layer-list>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="18"
+        android:translateY="18">
+        <!-- White Arch: The Gateway (F8FAFC) -->
+        <!-- Center in 72x72 viewport (from 18 to 90) -->
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#F8FAFC"
+            android:strokeWidth="6"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M20,54 L20,34 A16,16 0 0,1 52,34 L52,54" />
+
+        <!-- Green Coin passing through (Emerald #10B981) -->
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M36,44 m-9,0 a9,9 0 1,1 18,0 a9,9 0 1,1 -18,0" />
+
+        <!-- Subtle inner highlight or accent notch for the coin -->
+        <path
+            android:fillColor="#0A0A0A"
+            android:pathData="M36,44 m-3,0 a3,3 0 1,1 6,0 a3,3 0 1,1 -6,0" />
+    </group>
+</vector>
