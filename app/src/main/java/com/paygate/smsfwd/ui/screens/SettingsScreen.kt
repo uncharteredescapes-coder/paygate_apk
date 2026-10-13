@@ -240,6 +240,11 @@ fun SettingsScreen(
                     color = GateTheme.colors.ink2
                 )
                 Text(
+                    text = "Device Token: ${viewModel.getMaskedToken()}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = GateTheme.colors.ink2
+                )
+                Text(
                     text = "Monotonic Device Seq: ${viewModel.prefs.deviceSeq}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = GateTheme.colors.ink2

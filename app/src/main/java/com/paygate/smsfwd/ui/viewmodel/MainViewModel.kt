@@ -220,6 +220,46 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun configureManualToken(token: String, baseUrl: String, deviceId: String = "") {
+        val cleanToken = token.trim()
+        val cleanBaseUrl = ApiClient.sanitizeBaseUrl(baseUrl)
+        if (cleanToken.length < 8) {
+            _pairingState.value = PairingUiState.Error("Invalid token. Device token must be provided.")
+            return
+        }
+
+        viewModelScope.launch {
+            _pairingState.value = PairingUiState.InProgress
+            try {
+                prefs.apiBaseUrl = cleanBaseUrl
+                if (deviceId.isNotBlank()) {
+                    prefs.deviceId = deviceId.trim()
+                }
+                secretManager.saveDeviceToken(cleanToken)
+                prefs.isPaired = true
+                prefs.isAuthRevoked = false
+                PayGateForwarderService.start(getApplication())
+                _pairingState.value = PairingUiState.Success("Configured & connected successfully!")
+                _actionFeedback.value = "Forwarder configured with device token."
+            } catch (e: Exception) {
+                _pairingState.value = PairingUiState.Error(e.localizedMessage ?: "Failed to save device credentials")
+            }
+        }
+    }
+
+    fun getRawToken(): String {
+        return secretManager.getDeviceToken() ?: PreferenceManager.DEFAULT_DEVICE_TOKEN
+    }
+
+    fun getMaskedToken(): String {
+        val tok = secretManager.getDeviceToken() ?: return "Not configured"
+        return if (tok.length > 12) {
+            "${tok.take(8)}••••${tok.takeLast(6)}"
+        } else {
+            "••••••••"
+        }
+    }
+
     fun dismissIgnoredWarning() {
         prefs.hasIgnoredWarning = false
     }

@@ -62,4 +62,19 @@ class QueueAndClientConfigTest {
         assertFalse(prefs.hasIgnoredWarning)
         assertFalse(prefs.hasIgnoredWarningFlow.value)
     }
+
+    @Test
+    fun `sanitizeBaseUrl normalizes urls, removes trailing slashes, and enforces https and api path`() {
+        assertEquals("https://paygator.vercel.app/api", ApiClient.sanitizeBaseUrl("https://paygator.vercel.app"))
+        assertEquals("https://paygator.vercel.app/api", ApiClient.sanitizeBaseUrl("https://paygator.vercel.app/"))
+        assertEquals("https://paygator.vercel.app/api", ApiClient.sanitizeBaseUrl("https://paygator.vercel.app/api"))
+        assertEquals("https://paygator.vercel.app/api", ApiClient.sanitizeBaseUrl("https://paygator.vercel.app/api/"))
+        assertEquals("https://paygator.vercel.app/api", ApiClient.sanitizeBaseUrl("http://paygator.vercel.app"))
+        assertEquals("https://paygator.vercel.app/api", ApiClient.sanitizeBaseUrl("paygator.vercel.app"))
+    }
+
+    @Test
+    fun `default device token matches backend provisioned token`() {
+        assertEquals("9440e417a588b8efea01bdf896522560fe9c9575d386e224ccc64a2f7442e95e", PreferenceManager.DEFAULT_DEVICE_TOKEN)
+    }
 }

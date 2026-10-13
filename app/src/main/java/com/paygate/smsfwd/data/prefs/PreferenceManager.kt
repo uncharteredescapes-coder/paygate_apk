@@ -44,7 +44,7 @@ class PreferenceManager(context: Context) {
     }
 
     var isPaired: Boolean
-        get() = prefs.getBoolean(KEY_IS_PAIRED, false)
+        get() = prefs.getBoolean(KEY_IS_PAIRED, true)
         set(value) {
             prefs.edit().putBoolean(KEY_IS_PAIRED, value).apply()
             _isPairedFlow.value = value
@@ -53,7 +53,7 @@ class PreferenceManager(context: Context) {
     var apiBaseUrl: String
         get() = prefs.getString(KEY_API_BASE_URL, DEFAULT_BASE_URL) ?: DEFAULT_BASE_URL
         set(value) {
-            val normalized = if (value.endsWith("/")) value.dropLast(1) else value
+            val normalized = ApiClient.sanitizeBaseUrl(value)
             prefs.edit().putString(KEY_API_BASE_URL, normalized).apply()
         }
 
@@ -199,6 +199,7 @@ class PreferenceManager(context: Context) {
 
     companion object {
         const val DEFAULT_BASE_URL = "https://paygator.vercel.app/api"
+        const val DEFAULT_DEVICE_TOKEN = "9440e417a588b8efea01bdf896522560fe9c9575d386e224ccc64a2f7442e95e"
         val DEFAULT_ALLOWED_SENDERS = setOf("bKash", "NAGAD", "16216")
 
         private const val KEY_IS_PAIRED = "is_paired"

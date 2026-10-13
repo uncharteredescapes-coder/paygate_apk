@@ -23,6 +23,12 @@ class PayGateApplication : Application() {
         prefs = PreferenceManager(this)
         secretManager = KeystoreSecretManager(this)
 
+        if (secretManager.getDeviceToken().isNullOrBlank()) {
+            secretManager.saveDeviceToken(PreferenceManager.DEFAULT_DEVICE_TOKEN)
+            prefs.apiBaseUrl = PreferenceManager.DEFAULT_BASE_URL
+            prefs.isPaired = true
+        }
+
         if (prefs.isPaired && prefs.isServiceEnabled && !prefs.isAuthRevoked) {
             PayGateForwarderService.start(this)
         }

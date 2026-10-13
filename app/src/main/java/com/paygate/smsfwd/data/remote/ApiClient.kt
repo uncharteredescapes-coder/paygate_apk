@@ -24,12 +24,14 @@ object ApiClient {
 
     private val headerInterceptor = Interceptor { chain ->
         val original = chain.request()
-        val request = original.newBuilder()
-            .header("X-Device-Id", deviceIdProvider())
+        val builder = original.newBuilder()
             .header("X-App-Version", "3.0.0")
             .header("X-Payload-Version", "3")
-            .build()
-        chain.proceed(request)
+        val dId = deviceIdProvider()
+        if (dId.isNotBlank()) {
+            builder.header("X-Device-Id", dId)
+        }
+        chain.proceed(builder.build())
     }
 
     private val mockInterceptor = Interceptor { chain ->
@@ -95,8 +97,26 @@ object ApiClient {
     @Volatile
     private var currentService: PayGateApiService? = null
 
+    fun sanitizeBaseUrl(input: String): String {
+        var url = input.trim()
+        if (url.isEmpty()) return "https://paygator.vercel.app/api"
+        if (!url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) {
+            url = "https://$url"
+        } else if (url.startsWith("http://", ignoreCase = true)) {
+            url = "https://" + url.substring(7)
+        }
+        while (url.endsWith("/")) {
+            url = url.dropLast(1)
+        }
+        if (!url.endsWith("/api", ignoreCase = true) && !url.endsWith("/v1", ignoreCase = true)) {
+            url = "$url/api"
+        }
+        return url
+    }
+
     fun getService(baseUrl: String): PayGateApiService {
-        val sanitized = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
+        val clean = sanitizeBaseUrl(baseUrl)
+        val sanitized = "$clean/"
         if (currentService != null && currentBaseUrl == sanitized) {
             return currentService!!
         }
